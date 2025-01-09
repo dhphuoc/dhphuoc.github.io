@@ -1,54 +1,107 @@
-<?php
-define('API_KEY', 'DHP07-TDS');
-$last_key = API_KEY;
-function isAuthorized($key) {
-    return $key === API_KEY;
-}
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $key = isset($_POST['key']) ? $_POST['key'] : '';
-    if ($key !== $last_key) {
-        http_response_code(403);
-        $dulieu = [
-            "status" => 'close',
-            "msg" => 'Máy chủ đã được đóng do admin đang nâng cấp tool',
-        ];
-        echo json_encode($dulieu, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-    if (!isAuthorized($key)) {
-        http_response_code(403);
-        $dulieu = [
-            "status" => 'error',
-            "msg" => 'Không được phép truy cập máy chủ',
-        ];
-        echo json_encode($dulieu, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-    $action = isset($_POST['action']) ? $_POST['action'] : '';
-    if ($action === 'open') {
-        $dulieu = [
-            "status" => 'success',
-            "msg" => 'Máy chủ tds đã được mở, bạn có thể chạy tool sau 5s',
-        ];
-        echo json_encode($dulieu, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    } elseif ($action === 'close') {
-        $dulieu = [
-            "status" => 'error',
-            "msg" => 'Máy chủ đã đóng, admin đang nấp cấp tool',
-        ];
-        echo json_encode($dulieu, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    } else {
-        $dulieu = [
-            "status" => 'error',
-            "msg" => 'Hành động khả nghi',
-        ];
-        echo json_encode($dulieu, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    }
-} else {
-    $dulieu = [
-        "status" => 'error',
-        "msg" => 'bug gì đấy bạn trẻ ơi',
-    ];
-    echo json_encode($dulieu, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-}
-?>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý máy chủ TDS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #007BFF;
+        }
+        form {
+            margin-top: 20px;
+        }
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quản lý Máy chủ TDS</h1>
+        <form method="POST">
+            <label for="key">Nhập API Key:</label>
+            <input type="text" id="key" name="key" placeholder="Nhập API Key..." required>
+            
+            <label for="action">Hành động:</label>
+            <select id="action" name="action">
+                <option value="open">Mở máy chủ</option>
+                <option value="close">Đóng máy chủ</option>
+            </select>
+            
+            <button type="submit">Thực hiện</button>
+        </form>
+        <div class="message">
+            <?php
+            define('API_KEY', 'DHP07-TDS');
+            $last_key = API_KEY;
+
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $key = isset($_POST['key']) ? $_POST['key'] : '';
+                $action = isset($_POST['action']) ? $_POST['action'] : '';
+
+                if ($key !== $last_key) {
+                    echo '<p class="error">Máy chủ đã đóng: Admin đang nâng cấp tool.</p>';
+                } elseif ($key === $last_key) {
+                    if ($action === 'open') {
+                        echo '<p class="success">Máy chủ đã mở: Bạn có thể chạy tool sau 5 giây.</p>';
+                    } elseif ($action === 'close') {
+                        echo '<p class="error">Máy chủ đã đóng: Admin đang nâng cấp tool.</p>';
+                    } else {
+                        echo '<p class="error">Hành động không hợp lệ!</p>';
+                    }
+                } else {
+                    echo '<p class="error">Không được phép truy cập máy chủ.</p>';
+                }
+            }
+            ?>
+        </div>
+    </div>
+</body>
+</html>
